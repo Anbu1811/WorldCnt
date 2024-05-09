@@ -13,5 +13,7 @@ namespace WorldCountry.API.Data
 
 
         public DbSet<Country> AllCountries { get; set; }
+
+        public DbSet<States> AllStates { get; set; }
     }
 }
