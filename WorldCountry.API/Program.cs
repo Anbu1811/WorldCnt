@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using WorldCountry.API.Common;
 using WorldCountry.API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,12 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+#endregion
+
+#region AutoMapper
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 #endregion
 
 

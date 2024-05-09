@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WorldCountry.API.Data;
+using WorldCountry.API.DTO;
 using WorldCountry.API.Model;
 
 namespace WorldCountry.API.Controllers
@@ -11,59 +13,110 @@ namespace WorldCountry.API.Controllers
     public class CountryController : ControllerBase
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly IMapper _mapper;
 
-        public CountryController(ApplicationDbContext dbContext)
+
+
+
+
+        public CountryController(ApplicationDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
         }
 
+
+
+
+
+
         [HttpPost]
-        public ActionResult<Country> Create([FromBody]Country country)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public ActionResult<CreateCountryDTO> Create([FromBody]CreateCountryDTO countryDTO)
         {
+            var isnameexist = _dbContext.AllCountries.AsQueryable().Where(x=>x.Name.ToLower().Trim() == countryDTO.Name.ToLower().Trim()).Any();
+
+            if(isnameexist)
+            {
+                return Conflict("This country name is already existed");
+            }
+
+            var country = _mapper.Map<Country>(countryDTO);
+          
+
             _dbContext.AllCountries.Add(country);
             _dbContext.SaveChanges();
 
-            return Ok();
+            return CreatedAtAction("GetById", new { id = country.Id }, country);
         }
 
         
 
         [HttpPut("{id:int}")]
-        public ActionResult<Country> Update(int id, [FromBody]Country country)
-        {
-            var check = _dbContext.AllCountries.AsQueryable().Where(x => x.Id == id);
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
 
-            if (check == null)
+        public ActionResult<UpdateCountryDTO> Update(int id, [FromBody]UpdateCountryDTO countryDTO)
+        {
+            var check = _dbContext.AllCountries.AsQueryable().Where(x => x.Id == id).Any();
+
+            if (check)
             {
-                return Conflict("Please Enter valid ID Number");
+                var country = _mapper.Map<Country>(countryDTO);
+
+                _dbContext.AllCountries.Update(country);
+                _dbContext.SaveChanges();
+
+                return NoContent();
+
+
+                
             }
 
-            _dbContext.AllCountries.Update(country);
-            _dbContext.SaveChanges();
-
-            return Ok();
+            return Conflict("Please Enter valid ID Number");
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Country>> GetAll()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult<IEnumerable<ShowCountryDTO>> GetAll()
         {
             var listCountry = _dbContext.AllCountries.ToList();
-            return Ok(listCountry);
+            if(listCountry == null)
+            {
+                return NoContent();
+            }
+
+            var country = _mapper.Map<List<ShowCountryDTO>>(listCountry);
+
+            return Ok(country);
         }
 
 
         [HttpGet("{id:int}")]
-        public ActionResult<Country> GetById(int id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult<ShowCountryDTO> GetById(int id)
         {
             var check = _dbContext.AllCountries.Find(id);
+            if(check == null)
+            {
+                return NoContent();
+            }
 
-            return Ok(check);
+            var country = _mapper.Map<ShowCountryDTO>(check);
+
+            return Ok(country);
         }
 
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult<Country> Delete(int id)
         {
             var check = _dbContext.AllCountries.Find(id);
+           
 
             if(check == null)
             {
@@ -73,7 +126,7 @@ namespace WorldCountry.API.Controllers
             _dbContext.AllCountries.Remove(check);
             _dbContext.SaveChanges();
 
-            return Ok();
+            return NoContent();
         }
 
     }
