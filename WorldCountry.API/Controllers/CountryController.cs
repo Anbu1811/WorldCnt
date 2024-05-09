@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using WorldCountry.API.Data;
 using WorldCountry.API.DTO;
 using WorldCountry.API.Model;
+using WorldCountry.API.Repository.IRepository;
 
 namespace WorldCountry.API.Controllers
 {
@@ -12,16 +13,16 @@ namespace WorldCountry.API.Controllers
     [ApiController]
     public class CountryController : ControllerBase
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly ICountryRepository _countryRepository;
         private readonly IMapper _mapper;
 
 
 
 
 
-        public CountryController(ApplicationDbContext dbContext, IMapper mapper)
+        public CountryController(ICountryRepository countryRepository, IMapper mapper)
         {
-            _dbContext = dbContext;
+            _countryRepository = countryRepository;
             _mapper = mapper;
         }
 
@@ -33,11 +34,12 @@ namespace WorldCountry.API.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public ActionResult<CreateCountryDTO> Create([FromBody]CreateCountryDTO countryDTO)
+        public async Task<ActionResult<CreateCountryDTO>> Create([FromBody]CreateCountryDTO countryDTO)
         {
-            var isnameexist = _dbContext.AllCountries.AsQueryable().Where(x=>x.Name.ToLower().Trim() == countryDTO.Name.ToLower().Trim()).Any();
+            var isNameExist =  _countryRepository.IsCountryExist(countryDTO.Name);
+            //var isnameexist = _dbContext.AllCountries.AsQueryable().Where(x=>x.Name.ToLower().Trim() == countryDTO.Name.ToLower().Trim()).Any();
 
-            if(isnameexist)
+            if(isNameExist)
             {
                 return Conflict("This country name is already existed");
             }
@@ -45,8 +47,9 @@ namespace WorldCountry.API.Controllers
             var country = _mapper.Map<Country>(countryDTO);
           
 
-            _dbContext.AllCountries.Add(country);
-            _dbContext.SaveChanges();
+            //_dbContext.AllCountries.Add(country);
+            //_dbContext.SaveChanges();
+            await _countryRepository.Create(country);
 
             return CreatedAtAction("GetById", new { id = country.Id }, country);
         }
@@ -57,32 +60,38 @@ namespace WorldCountry.API.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
 
-        public ActionResult<UpdateCountryDTO> Update(int id, [FromBody]UpdateCountryDTO countryDTO)
+        public async Task<ActionResult<Country>> Update(int id, [FromBody]UpdateCountryDTO countryDTO)
         {
-            var check = _dbContext.AllCountries.AsQueryable().Where(x => x.Id == id).Any();
-
-            if (check)
+            //var check = _dbContext.AllCountries.AsQueryable().Where(x => x.Id == id).Any();
+            //var check =  _countryRepository.GetById(countryDTO.Id);
+            
+            if (id != countryDTO.Id)
             {
-                var country = _mapper.Map<Country>(countryDTO);
 
-                _dbContext.AllCountries.Update(country);
-                _dbContext.SaveChanges();
+                //_dbContext.AllCountries.Update(country);
+                //_dbContext.SaveChanges();
 
-                return NoContent();
-
-
-                
+                return BadRequest();
             }
 
-            return Conflict("Please Enter valid ID Number");
+
+            var country = _mapper.Map<Country>(countryDTO);
+
+            await _countryRepository.Update(country);
+
+            return NoContent();
+
+            
         }
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult<IEnumerable<ShowCountryDTO>> GetAll()
+        public async Task<ActionResult<IEnumerable<ShowCountryDTO>>> GetAll()
         {
-            var listCountry = _dbContext.AllCountries.ToList();
+            //var listCountry = _dbContext.AllCountries.ToList();
+            var listCountry = await _countryRepository.GetAll();
+
             if(listCountry == null)
             {
                 return NoContent();
@@ -97,9 +106,12 @@ namespace WorldCountry.API.Controllers
         [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult<ShowCountryDTO> GetById(int id)
+        public async Task<ActionResult<ShowCountryDTO>> GetById(int id)
         {
-            var check = _dbContext.AllCountries.Find(id);
+            //var check = _dbContext.AllCountries.Find(id);
+            var check = await _countryRepository.GetById(id);
+
+
             if(check == null)
             {
                 return NoContent();
@@ -113,9 +125,11 @@ namespace WorldCountry.API.Controllers
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult<Country> Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var check = _dbContext.AllCountries.Find(id);
+            //var check = _dbContext.AllCountries.Find(id);
+
+            var check = await  _countryRepository.GetById(id);
            
 
             if(check == null)
@@ -123,11 +137,14 @@ namespace WorldCountry.API.Controllers
                 return Conflict("Please Enter Valid Id Number");
             }
 
-            _dbContext.AllCountries.Remove(check);
-            _dbContext.SaveChanges();
+            //_dbContext.AllCountries.Remove(check);
+            //_dbContext.SaveChanges();
+
+            await _countryRepository.Delete(check);
 
             return NoContent();
         }
 
     }
 }
+
