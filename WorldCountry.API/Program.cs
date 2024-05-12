@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using WorldCountry.API.Common;
 using WorldCountry.API.Data;
 using WorldCountry.API.Repository;
@@ -40,6 +41,23 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddTransient<ICountryRepository, CountryRepository>();
 builder.Services.AddTransient<IStateRepository, StateRepository>();
+
+builder.Services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+#endregion
+
+#region config Serilog
+
+builder.Host.UseSerilog((context, config) =>
+{
+    config.WriteTo.File("Logs/Log.txt",rollingInterval:RollingInterval.Day);
+
+    if(context.HostingEnvironment.IsProduction() == false)
+    {
+        config.WriteTo.Console();
+    }
+}
+);
 
 #endregion
 

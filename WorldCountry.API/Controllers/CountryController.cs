@@ -15,15 +15,16 @@ namespace WorldCountry.API.Controllers
     {
         private readonly ICountryRepository _countryRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<CountryController> _logger;
 
 
 
 
-
-        public CountryController(ICountryRepository countryRepository, IMapper mapper)
+        public CountryController(ICountryRepository countryRepository, IMapper mapper, ILogger<CountryController> logger)
         {
             _countryRepository = countryRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
 
@@ -114,6 +115,7 @@ namespace WorldCountry.API.Controllers
 
             if(check == null)
             {
+                _logger.LogError($"Error while try to get record id:{id}");
                 return NoContent();
             }
 
