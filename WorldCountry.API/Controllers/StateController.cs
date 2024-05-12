@@ -25,9 +25,9 @@ namespace WorldCountry.API.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult<CreateStateDTO>> Create([FromBody]CreateStateDTO state)
+        public async Task<ActionResult<CreateStateDTO>> Creat([FromBody]CreateStateDTO state)
         {
-            var result = _StateRepository.IsStateNameExist(state.Name);
+            var result = _StateRepository.IsRecordExiste(x=>x.Name == state.Name);
 
             if(result == true)
             {
@@ -36,7 +36,7 @@ namespace WorldCountry.API.Controllers
 
             var states = _mapper.Map<States>(state);
 
-            await _StateRepository.Creat(states);
+            await _StateRepository.Create(states);
 
             return CreatedAtAction("Get", new { id = states.Id }, state);
 

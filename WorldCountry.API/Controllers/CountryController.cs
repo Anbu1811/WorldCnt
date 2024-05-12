@@ -36,7 +36,7 @@ namespace WorldCountry.API.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<CreateCountryDTO>> Create([FromBody]CreateCountryDTO countryDTO)
         {
-            var isNameExist =  _countryRepository.IsCountryExist(countryDTO.Name);
+            var isNameExist =  _countryRepository.IsRecordExiste(x=>x.Name == countryDTO.Name);
             //var isnameexist = _dbContext.AllCountries.AsQueryable().Where(x=>x.Name.ToLower().Trim() == countryDTO.Name.ToLower().Trim()).Any();
 
             if(isNameExist)
@@ -109,7 +109,7 @@ namespace WorldCountry.API.Controllers
         public async Task<ActionResult<ShowCountryDTO>> GetById(int id)
         {
             //var check = _dbContext.AllCountries.Find(id);
-            var check = await _countryRepository.GetById(id);
+            var check = await _countryRepository.Get(id);
 
 
             if(check == null)
@@ -129,7 +129,7 @@ namespace WorldCountry.API.Controllers
         {
             //var check = _dbContext.AllCountries.Find(id);
 
-            var check = await  _countryRepository.GetById(id);
+            var check = await  _countryRepository.Get(id);
            
 
             if(check == null)
