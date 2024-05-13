@@ -1,0 +1,51 @@
+﻿@page
+@model World_Country.Web.Pages.AllCountriesModel
+@{
+}
+
+<h2>Country List</h2>
+
+<table class="table table-bordered table-striped">
+	<thead>
+		<tr>
+			<td>Name</td>
+			<td>Short Name</td>
+			<td>Country Code</td>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach(var item in Model.AllCountry)
+		{
+			<tr>
+				<td>@item.Name</td>
+				<td>@item.ShortName</td>
+				<td>@item.CountryCode</td>
+			</tr>
+		}
+	</tbody>
+</table>
+
+@* 
+
+<table class="table table-bordered table-striped">
+	<thead>
+		<tr>
+			<td>ID</td>
+			<td>Name</td>
+			<td>Population</td>
+			<td>Country ID</td>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in Model.AllStates)
+		{
+			<tr>
+				<td>@item.Id</td>
+				<td>@item.Name</td>
+				<td>@item.Population</td>
+				<td>@item.CountryId</td>
+			</tr>
+		}
+	</tbody>
+</table>
+ *@

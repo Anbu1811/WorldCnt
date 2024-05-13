@@ -24,15 +24,15 @@ namespace WorldCountry.API.Controllers
         {
             _countryRepository = countryRepository;
             _mapper = mapper;
-            _logger = logger;
-        }
+			_logger = logger;
+		}
 
 
 
 
 
 
-        [HttpPost]
+		[HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<CreateCountryDTO>> Create([FromBody]CreateCountryDTO countryDTO)
@@ -115,7 +115,7 @@ namespace WorldCountry.API.Controllers
 
             if(check == null)
             {
-                _logger.LogError($"Error while try to get record id:{id}");
+                _logger.LogError("Error while try to get record id:" + id);
                 return NoContent();
             }
 
